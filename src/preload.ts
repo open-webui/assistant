@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on(event, callback);
   },
 
+  checkConnection: () => ipcRenderer.invoke("check-connection"),
   loadConfig: () => ipcRenderer.invoke("load-config"),
   saveConfig: (data) => ipcRenderer.send("save-config", data),
 });

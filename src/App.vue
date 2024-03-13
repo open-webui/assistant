@@ -6,7 +6,7 @@ import { ref, onBeforeMount } from 'vue';
 const url = ref('http://localhost:3000')
 const token = ref('your_jwt')
 
-const submitHandler = () => {
+const submitHandler = async () => {
     console.log(url.value, token.value)
 
 
@@ -20,6 +20,12 @@ const submitHandler = () => {
         token: token.value
     })
 
+    const res = await window.electron.checkConnection()
+
+    new Notification("Open WebUI", { body: res ? 'Server Connection Verified' : 'Server Connection Failed' })
+
+    console.log(res)
+
 }
 
 
@@ -30,6 +36,8 @@ onBeforeMount(async () => {
         url.value = res.url
         token.value = res.token
     }
+
+
 })
 
 

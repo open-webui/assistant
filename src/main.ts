@@ -2,6 +2,7 @@ import {
   app,
   BrowserWindow,
   globalShortcut,
+  Notification,
   clipboard,
   ipcMain,
 } from "electron";
