@@ -11,6 +11,8 @@ import path from "path";
 import { keyboard, Key } from "@nut-tree/nut-js";
 import { splitStream, sleep } from "./utils";
 
+import { default as fs } from "fs";
+
 keyboard.config.autoDelayMs = 0;
 
 let WEBUI_VERSION: string | null = null;
@@ -34,6 +36,7 @@ const createWindow = () => {
     width: 300,
     height: 180,
     webPreferences: {
+      nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     },
   });
@@ -231,12 +234,54 @@ const selectModel = async (modelId) => {
   return selectedModel;
 };
 
+const loadConfig = async () => {
+  fs.readFile("config.json", "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading config file:", err);
+      return;
+    }
+
+    try {
+      // Parse the JSON data
+      const _config = JSON.parse(data);
+
+      // Do something with the config object
+      console.log("Config:", _config);
+
+      if (_config.url) {
+        config.url = _config.url;
+      }
+
+      if (_config.token) {
+        config.token = _config.token;
+      }
+
+      if (_config.model) {
+        selectedModel = _config.model;
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+  });
+};
+
+const saveConfigToFile = async () => {
+  fs.writeFileSync(
+    "config.json",
+    JSON.stringify({
+      ...config,
+      model: selectModel,
+    })
+  );
+};
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app
   .whenReady()
   .then(() => {
+    loadConfig();
+
     ipcMain.handle("check-connection", async (event, arg) => {
       await getVersion();
       return WEBUI_VERSION !== null;
@@ -248,7 +293,9 @@ app
     });
 
     ipcMain.handle("select-model", async (event, modelId) => {
-      return await selectModel(modelId);
+      const res = await selectModel(modelId);
+      saveConfigToFile();
+      return res;
     });
 
     ipcMain.handle("load-config", (event, arg) => {
@@ -258,6 +305,7 @@ app
     ipcMain.on("save-config", (event, data) => {
       console.log(data);
       updateConfig(data);
+      saveConfigToFile();
     });
 
     globalShortcut.register("Alt+CommandOrControl+O", shortcutHandler);

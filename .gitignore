@@ -3,6 +3,8 @@ node_modules
 out
 _test
 
+config.json
+
 # Logs
 logs
 *.log
