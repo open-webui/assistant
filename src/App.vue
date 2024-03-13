@@ -64,7 +64,7 @@ onBeforeMount(async () => {
 
 <template>
     <div class=" h-screen w-screen p-3 flex justify-center">
-        <div class=" my-auto w-full flex flex-col gap-2">
+        <form class=" my-auto w-full flex flex-col gap-2" @submit.prevent="saveHandler">
             <div class="flex justify-between items-center">
                 <div class=" text-sm font-semibold">Open WebUI Assistant</div>
 
@@ -77,7 +77,7 @@ onBeforeMount(async () => {
                 <div v-else>
                     <button
                         class="bg-neutral-700 hover:bg-neutral-800 transition text-white text-xs px-3 py-1 rounded-lg"
-                        @click="saveHandler">Connect</button>
+                        type="submit">Connect</button>
                 </div>
 
 
@@ -87,10 +87,10 @@ onBeforeMount(async () => {
 
                 <input v-model="url"
                     class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:text-gray-500"
-                    placeholder="Open WebUI URL" :disabled='connected' />
+                    placeholder="Open WebUI URL" :disabled='connected' required />
                 <input v-model="token"
                     class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:text-gray-500"
-                    placeholder="Open WebUI Token" :disabled='connected' />
+                    placeholder="Open WebUI Token" :disabled='connected' required />
 
                 <hr />
 
@@ -103,7 +103,8 @@ onBeforeMount(async () => {
                         <option v-for="model in models" v-bind:value="model.name">{{ model.name }}</option>
                     </select>
 
-                    <button class="p-1 bg-gray-100 hover:bg-gray-200 transition rounded-lg" @click="selectModelHandler">
+                    <button class="p-1 bg-gray-100 hover:bg-gray-200 transition rounded-lg" type="button"
+                        @click="selectModelHandler">
 
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                             <path fill-rule="evenodd"
@@ -118,7 +119,7 @@ onBeforeMount(async () => {
 
 
             </div>
-        </div>
+        </form>
 
 
     </div>

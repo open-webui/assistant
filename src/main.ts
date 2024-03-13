@@ -15,6 +15,8 @@ import { default as fs } from "fs";
 
 keyboard.config.autoDelayMs = 0;
 
+const configPath = app.getPath("userData") + "/config.json";
+
 let WEBUI_VERSION: string | null = null;
 let models: object[] = [];
 
@@ -235,7 +237,7 @@ const selectModel = async (modelId) => {
 };
 
 const loadConfig = async () => {
-  fs.readFile("config.json", "utf8", (err, data) => {
+  fs.readFile(configPath, "utf8", (err, data) => {
     if (err) {
       console.error("Error reading config file:", err);
       return;
@@ -248,16 +250,24 @@ const loadConfig = async () => {
       // Do something with the config object
       console.log("Config:", _config);
 
-      if (_config.url) {
-        config.url = _config.url;
-      }
+      if (_config.version === 1) {
+        console.log("Config loaded successfully:", config);
+        // Use the loaded configuration
 
-      if (_config.token) {
-        config.token = _config.token;
-      }
+        if (_config.url) {
+          config.url = _config.url;
+        }
 
-      if (_config.model) {
-        selectedModel = _config.model;
+        if (_config.token) {
+          config.token = _config.token;
+        }
+
+        if (_config.model) {
+          selectedModel = _config.model;
+        }
+      } else {
+        console.error("Incompatible configuration version.");
+        // Handle incompatible version gracefully
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
@@ -267,8 +277,9 @@ const loadConfig = async () => {
 
 const saveConfigToFile = async () => {
   fs.writeFileSync(
-    "config.json",
+    configPath,
     JSON.stringify({
+      version: 1,
       ...config,
       model: selectModel,
     })
@@ -281,6 +292,9 @@ app
   .whenReady()
   .then(() => {
     loadConfig();
+
+    console.log(process.cwd());
+    console.log(app.getPath("userData"));
 
     ipcMain.handle("check-connection", async (event, arg) => {
       await getVersion();
