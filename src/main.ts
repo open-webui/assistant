@@ -136,37 +136,6 @@ const generateResponse = async (prompt: string) => {
   }
 };
 
-const shortcutHandler = async () => {
-  console.log("shortcutHandler");
-  keyboard.config.autoDelayMs = 10;
-
-  let i = 0;
-  while (i !== 5) {
-    if (process.platform !== "darwin") {
-      await keyboard.type(Key.LeftControl, Key.C);
-    } else {
-      await keyboard.type(Key.LeftSuper, Key.C);
-    }
-    i++;
-  }
-
-  await sleep(100);
-
-  const prompt = await clipboard.readText();
-  console.log(prompt);
-
-  if (config.url !== "" && config.token !== "" && selectedModel !== "") {
-    keyboard.config.autoDelayMs = 0;
-
-    await generateResponse(prompt);
-  } else {
-    keyboard.config.autoDelayMs = 100;
-
-    console.log(config);
-    await typeWord("Open WebUI URL/Token Required!");
-  }
-};
-
 const getVersion = async () => {
   if (config.url) {
     const res = await fetch(`${config.url}/api/version`, {
@@ -285,6 +254,45 @@ const saveConfigToFile = async () => {
     })
   );
 };
+
+const shortcutHandler = async () => {
+  if (WEBUI_VERSION === null) {
+    console.log(config);
+    await new Notification({
+      title: "Open WebUI",
+      body: "Server Connection Failed",
+    }).show();
+    return;
+  } else if (selectedModel === "") {
+    await new Notification({
+      title: "Open WebUI",
+      body: "Model not selected",
+    }).show();
+    return;
+  }
+
+  console.log("shortcutHandler");
+  keyboard.config.autoDelayMs = 10;
+
+  let i = 0;
+  while (i !== 5) {
+    if (process.platform !== "darwin") {
+      await keyboard.type(Key.LeftControl, Key.C);
+    } else {
+      await keyboard.type(Key.LeftSuper, Key.C);
+    }
+    i++;
+  }
+
+  await sleep(100);
+
+  const prompt = await clipboard.readText();
+  console.log(prompt);
+
+  keyboard.config.autoDelayMs = 0;
+  await generateResponse(prompt);
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
