@@ -1,7 +1,9 @@
-.PHONY: all install
+.PHONY: all clean install
+
+clean:
+	rm -rf node_modules
 
 all:
-	rm -rf node_modules
 	npm i
 	rm -f node_modules/@jimp/core/node_modules/.bin/mkdirp
 	rm -f node_modules/execa/node_modules/.bin/semver
@@ -10,4 +12,3 @@ all:
 
 install:
 	mv out/open-webui-assistant-darwin-arm64/open-webui-assistant.app ~/Applications/Open\ WebUI\ Assistant.app
-
