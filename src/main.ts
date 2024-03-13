@@ -8,13 +8,16 @@ import {
 import path from "path";
 
 import { keyboard, Key } from "@nut-tree/nut-js";
-import { splitStream } from "./utils";
+import { splitStream, sleep } from "./utils";
 
 keyboard.config.autoDelayMs = 0;
+
+let WEBUI_VERSION: string | null = null;
 
 let config = {
   url: "",
   token: "",
+  model: "",
 };
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -125,12 +128,6 @@ const generateResponse = async (prompt: string) => {
   }
 };
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 const shortcutHandler = async () => {
   console.log("shortcutHandler");
   keyboard.config.autoDelayMs = 10;
@@ -162,12 +159,48 @@ const shortcutHandler = async () => {
   }
 };
 
+const getVersion = async () => {
+  if (config.url) {
+    const res = await fetch(`${config.url}/api/version`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw await res.json();
+        return res.json();
+      })
+      .catch((err) => {
+        console.log(err);
+        return null;
+      });
+
+    console.log(res);
+
+    if (res) {
+      WEBUI_VERSION = res.version;
+    } else {
+      WEBUI_VERSION = null;
+    }
+  } else {
+    WEBUI_VERSION = null;
+  }
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app
   .whenReady()
   .then(() => {
+    ipcMain.handle("check-connection", async (event, arg) => {
+      await getVersion();
+      return WEBUI_VERSION !== null;
+    });
+
+    ipcMain.handle("get-models", (event, arg) => {});
+
     ipcMain.handle("load-config", (event, arg) => {
       return config;
     });

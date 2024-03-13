@@ -24,15 +24,12 @@ const submitHandler = () => {
 
 
 onBeforeMount(async () => {
-    console.log('hi')
     const res = await window.electron.loadConfig()
 
     if (res) {
         url.value = res.url
         token.value = res.token
     }
-
-
 })
 
 

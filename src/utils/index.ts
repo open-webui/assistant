@@ -12,3 +12,9 @@ export const splitStream = (splitOn) => {
     },
   });
 };
+
+export const sleep = (ms) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
