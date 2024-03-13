@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("electron", {
   },
 
   checkConnection: () => ipcRenderer.invoke("check-connection"),
+  getModels: () => ipcRenderer.invoke("get-models"),
+  selectModel: (modelId) => ipcRenderer.invoke("select-model", modelId),
   loadConfig: () => ipcRenderer.invoke("load-config"),
   saveConfig: (data) => ipcRenderer.send("save-config", data),
 });

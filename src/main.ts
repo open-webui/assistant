@@ -14,11 +14,12 @@ import { splitStream, sleep } from "./utils";
 keyboard.config.autoDelayMs = 0;
 
 let WEBUI_VERSION: string | null = null;
+let models: object[] = [];
 
+let selectedModel = "";
 let config = {
   url: "",
   token: "",
-  model: "",
 };
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -29,8 +30,9 @@ if (require("electron-squirrel-startup")) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    icon: "/src/assets/images/icon.png",
     width: 300,
-    height: 150,
+    height: 180,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -74,7 +76,7 @@ const generateResponse = async (prompt: string) => {
       Authorization: `Bearer ${config.token}`,
     },
     body: JSON.stringify({
-      model: "mistral:latest",
+      model: selectedModel,
       messages: [
         {
           role: "user",
@@ -148,7 +150,7 @@ const shortcutHandler = async () => {
   const prompt = await clipboard.readText();
   console.log(prompt);
 
-  if (config.url !== "" && config.token !== "") {
+  if (config.url !== "" && config.token !== "" && selectedModel !== "") {
     keyboard.config.autoDelayMs = 0;
 
     await generateResponse(prompt);
@@ -189,6 +191,46 @@ const getVersion = async () => {
   }
 };
 
+const getModels = async () => {
+  if (config.url) {
+    const res = await fetch(`${config.url}/ollama/api/tags`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.token}`,
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw await res.json();
+        return res.json();
+      })
+      .catch((err) => {
+        console.log(err);
+        return null;
+      });
+
+    console.log(res);
+
+    if (res) {
+      return res.models;
+    }
+  }
+
+  return null;
+};
+
+const selectModel = async (modelId) => {
+  console.log(modelId);
+  selectedModel = modelId;
+
+  new Notification({
+    title: "Open WebUI",
+    body: `'${modelId}' selected.`,
+  }).show();
+
+  return selectedModel;
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -200,7 +242,14 @@ app
       return WEBUI_VERSION !== null;
     });
 
-    ipcMain.handle("get-models", (event, arg) => {});
+    ipcMain.handle("get-models", async (event, arg) => {
+      models = await getModels();
+      return models;
+    });
+
+    ipcMain.handle("select-model", async (event, modelId) => {
+      return await selectModel(modelId);
+    });
 
     ipcMain.handle("load-config", (event, arg) => {
       return config;
