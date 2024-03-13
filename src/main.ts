@@ -71,7 +71,7 @@ const typeWord = async (word: string) => {
   }
 };
 
-const generateResponse = async (prompt: string) => {
+const generateResponse = async (body: object) => {
   console.log("generateResponse");
   const res = await fetch(`${config.url}/ollama/api/chat`, {
     method: "POST",
@@ -80,16 +80,7 @@ const generateResponse = async (prompt: string) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.token}`,
     },
-    body: JSON.stringify({
-      model: selectedModel,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      stream: true,
-    }),
+    body: JSON.stringify(body),
   }).catch((err) => {
     console.log(err);
     return null;
@@ -255,7 +246,7 @@ const saveConfigToFile = async () => {
   );
 };
 
-const shortcutHandler = async () => {
+const AltCmdOShortcutHandler = async () => {
   if (WEBUI_VERSION === null) {
     console.log(config);
     await new Notification({
@@ -290,15 +281,73 @@ const shortcutHandler = async () => {
   console.log(prompt);
 
   keyboard.config.autoDelayMs = 0;
-  await generateResponse(prompt);
+  await generateResponse({
+    model: selectedModel,
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    stream: true,
+  });
 };
 
+const AltCmdIShortcutHandler = async () => {
+  if (WEBUI_VERSION === null) {
+    console.log(config);
+    await new Notification({
+      title: "Open WebUI",
+      body: "Server Connection Failed",
+    }).show();
+    return;
+  } else if (selectedModel === "") {
+    await new Notification({
+      title: "Open WebUI",
+      body: "Model not selected",
+    }).show();
+    return;
+  }
+
+  console.log("shortcutHandler");
+  keyboard.config.autoDelayMs = 10;
+
+  let i = 0;
+  while (i !== 5) {
+    if (process.platform !== "darwin") {
+      await keyboard.type(Key.LeftControl, Key.C);
+    } else {
+      await keyboard.type(Key.LeftSuper, Key.C);
+    }
+    i++;
+  }
+
+  await sleep(100);
+
+  const prompt = await clipboard.readText();
+  console.log(prompt);
+
+  keyboard.config.autoDelayMs = 0;
+
+  await typeWord(prompt);
+  await generateResponse({
+    model: selectedModel,
+    messages: [
+      {
+        role: "assistant",
+        content: prompt,
+      },
+    ],
+    stream: true,
+  });
+};
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app
   .whenReady()
   .then(() => {
+    new Notification();
     loadConfig();
 
     console.log(process.cwd());
@@ -330,7 +379,8 @@ app
       saveConfigToFile();
     });
 
-    globalShortcut.register("Alt+CommandOrControl+O", shortcutHandler);
+    globalShortcut.register("Alt+CommandOrControl+O", AltCmdOShortcutHandler);
+    globalShortcut.register("Alt+CommandOrControl+I", AltCmdIShortcutHandler);
   })
   .then(createWindow);
 
