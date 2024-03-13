@@ -322,7 +322,7 @@ const AltCmdIShortcutHandler = async () => {
     i++;
   }
 
-  await sleep(100);
+  await sleep(500);
 
   const prompt = await clipboard.readText();
   console.log(prompt);
