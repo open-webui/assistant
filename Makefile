@@ -13,4 +13,5 @@ clean:
 	rm -rf node_modules
 
 install:
+	xattr -c out/open-webui-assistant-darwin-arm64/open-webui-assistant.app
 	mv out/open-webui-assistant-darwin-arm64/open-webui-assistant.app ~/Applications/Open\ WebUI\ Assistant.app
