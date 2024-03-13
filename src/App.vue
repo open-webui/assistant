@@ -6,6 +6,9 @@ import { ref, onBeforeMount } from 'vue';
 const url = ref('http://localhost:3000')
 const token = ref('your_jwt')
 
+const connected = ref(false)
+
+
 const models = ref([])
 const selectedModel = ref('')
 
@@ -20,15 +23,20 @@ const saveHandler = async () => {
         url: url.value,
         token: token.value
     })
-    const res = await window.electron.checkConnection()
 
-    new Notification("Open WebUI", { body: res ? 'Server Connection Verified' : 'Server Connection Failed' })
 
-    if (res) {
+    connected.value = await window.electron.checkConnection()
+
+    new Notification("Open WebUI", { body: connected.value ? 'Server Connection Verified' : 'Server Connection Failed' })
+
+    if (connected.value) {
         models.value = await window.electron.getModels()
-
         console.log(models.value)
     }
+}
+
+const editHandler = () => {
+    connected.value = false
 }
 
 const selectModelHandler = async () => {
@@ -60,18 +68,29 @@ onBeforeMount(async () => {
             <div class="flex justify-between items-center">
                 <div class=" text-sm font-semibold">Open WebUI Assistant</div>
 
-                <button class="bg-neutral-700 hover:bg-neutral-800 transition text-white text-xs px-3 py-1 rounded-lg"
-                    @click="saveHandler">Save</button>
+                <div v-if="connected">
+                    <button
+                        class="bg-green-100 hover:bg-green-200 text-green-700 font-medium transition  text-xs px-3 py-1 rounded-lg"
+                        @click="editHandler">Connected</button>
+                </div>
+
+                <div v-else>
+                    <button
+                        class="bg-neutral-700 hover:bg-neutral-800 transition text-white text-xs px-3 py-1 rounded-lg"
+                        @click="saveHandler">Connect</button>
+                </div>
+
+
             </div>
             <div class="flex flex-col gap-1.5">
 
 
                 <input v-model="url"
-                    class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none"
-                    placeholder="Open WebUI URL" />
+                    class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:text-gray-500"
+                    placeholder="Open WebUI URL" :disabled='connected' />
                 <input v-model="token"
-                    class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none"
-                    placeholder="Open WebUI Token" />
+                    class=" w-full bg-gray-100 hover:bg-gray-200 transition rounded-lg py-1 px-2 text-xs outline-none disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:text-gray-500"
+                    placeholder="Open WebUI Token" :disabled='connected' />
 
                 <hr />
 
