@@ -14,8 +14,6 @@ Before installing Open WebUI Assistant, make sure you have `make`, `node`, and `
 
 If you don't have `make` or `node` installed, install them using your system package manager or refer to the [official documentation](https://www.gnu.org/software/make/download.html) and [Node.js download page](https://nodejs.org/en/download).
 
- Thank you for pointing that out! I apologize for the confusion caused by using `sudo` in my previous instructions. The corrected installation section of the README should look like this:
-
 ## Installation
 
 1. Clone Open WebUI Assistant's GitHub repository:
