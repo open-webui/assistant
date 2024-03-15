@@ -246,7 +246,7 @@ const saveConfigToFile = async () => {
   );
 };
 
-const AltCmdOShortcutHandler = async () => {
+const ResponseHandler = async () => {
   if (WEBUI_VERSION === null) {
     console.log(config);
     await new Notification({
@@ -293,7 +293,7 @@ const AltCmdOShortcutHandler = async () => {
   });
 };
 
-const AltCmdIShortcutHandler = async () => {
+const CompletionHandler = async () => {
   if (WEBUI_VERSION === null) {
     console.log(config);
     await new Notification({
@@ -379,8 +379,8 @@ app
       saveConfigToFile();
     });
 
-    globalShortcut.register("Alt+CommandOrControl+O", AltCmdOShortcutHandler);
-    globalShortcut.register("Alt+CommandOrControl+I", AltCmdIShortcutHandler);
+    globalShortcut.register("Alt+CommandOrControl+'", ResponseHandler);
+    globalShortcut.register("Alt+CommandOrControl+;", CompletionHandler);
   })
   .then(createWindow);
 
